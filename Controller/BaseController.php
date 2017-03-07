@@ -15,14 +15,14 @@ class BaseController
     public function __construct()
     {
         $UserModel = new UserModel();
-        $this->data['online'] = $UserModel->whoOnline();
+        $this->data['online'] = $UserModel->whoOnline(); //определение кто онлайн
         if (!empty($_SESSION['userId'])) {
-        $this->data['in_game'] = $UserModel->inGame($_SESSION['userId']);}
+        $this->data['in_game'] = $UserModel->inGame($_SESSION['userId']);} //определениекто в игре
         $GameModel = new GameModel();
-        $this->data['open_room'] = $GameModel->openRoom();
+        $this->data['open_room'] = $GameModel->openRoom(); //нахождение открытых комнат
     }
 
-    protected function render($templateName)
+    protected function render($templateName) // подключение необходимых вью
     {
         $data = $this->data;
         $message = $this->message;

@@ -3,23 +3,25 @@
 namespace Controller;
 
 use Model\GameModel;
+use Model\RatingModel;
 
 class GameController extends BaseController
 {
     protected $name = 'Game';
+    public  $userName = '';
 
-    public  function createroom()
+    public  function createroom() // создание новой комнаты
     {
         $GameModel = new GameModel();
         $GameModel->in_game($_SESSION['userId']);
         $oneRoomPlayer = $GameModel->oneRoomPlayer($_SESSION['user']);
-        if($oneRoomPlayer[0]['count(*)'] == 0) {
+        if($oneRoomPlayer[0]['count(*)'] == 0) { // проверка, что бы у игрока не было других открытых комнат
             $GameModel->createRoom($_POST['room'], $_SESSION['user']);
         }
         $this->render("room");
     }
 
-    public function enterroom()
+    public function enterroom() // вход в открытую комнату второго игрока
     {
         $GameModel = new GameModel();
         $match = false;
@@ -38,43 +40,52 @@ class GameController extends BaseController
         $this->render("room");
     }
 
-    public function outputroom()
+    public function outputroom() //выход из комнаты
     {
         $GameModel = new GameModel();
-        $GameModel->destroyRoom($_SESSION['user']);
+        $GameModel->destroyRoom($_SESSION['user']); // уничтожение комнаты после выхода их неё одного из игроков
         $this->render("outputroom");
     }
 
-    public function onclick()
+    public function onclick() // обработчик клика по ячейке
 {
     if (isset($_POST['id']))
     {
         $GameModel = new GameModel();
         $cell = 'cell_' . $_POST['id'];
-        $room = $GameModel->findRoom($_SESSION['user']);
-        $GameModel->step($room[0]['room_name'], $cell, $_SESSION['user']);
-        $players = $GameModel->findPlayers($room[0]['room_name']);
-        $GameModel->passivePlayer($room[0]['room_name'], $_SESSION['user']);
-        $success = $GameModel->playersInGame($players[0]['first_player'], $players[0]['second_player']);
-        $win = $GameModel->win($room[0]['room_name'], $players[0]['first_player'], $players[0]['second_player']);
-        $pic = $GameModel->whoIsThisPlayer($_SESSION['user'], $room[0]['room_name']);
-        $answer = array('success' => $success, 'win' => $win, 'pic' => $pic);
+        if (!empty($_SESSION['user']))
+        {
+            $this->userName = $_SESSION['user'];
+        }
+        $room = $GameModel->findRoom($this->userName); // поиск комнаты в которой сделали нажатие
+        $GameModel->step($room[0]['room_name'], $cell, $this->userName); // занесение сделаного хода в БД
+        $players = $GameModel->findPlayers($room[0]['room_name']); // запись ников обоих игроков
+        $GameModel->passivePlayer($room[0]['room_name'], $this->userName); // определение какой игрок пропускает ход после клика
+        $success = $GameModel->playersInGame($players[0]['first_player'], $players[0]['second_player']); // проверка не вышел ли кто то из комнаты во время игры
+        $win = $GameModel->win($room[0]['room_name'], $players[0]['first_player'], $players[0]['second_player']); // проверка выиграл ли кто то после клика
+        $pic = $GameModel->whoIsThisPlayer($this->userName, $room[0]['room_name']); // выбор картинки для установки в ячейку
+        $answer = array('success' => $success, 'win' => $win, 'pic' => $pic); // формирование ответа с сервера
         if ($win != '')
         {
-
+            $RatingModel = new RatingModel;
+            $RatingModel->rating($win, $players); // внесение всех необходимых изменений в рейтинги обоих игроков
         }
         echo json_encode($answer); exit;
     }
 }
 
-    public function game()
+    public function game() // постоянная связь с сервером раз в секунду
     {
         $GameModel = new GameModel();
-        $room = $GameModel->findRoom($_SESSION['user']);
+        if (!empty($_SESSION['user']))
+        {
+            $this->userName = $_SESSION['user'];
+        }
+        $room = $GameModel->findRoom($this->userName);
         $allstep = $GameModel->actualField($room[0]['room_name']);
         $passive = $GameModel->whoIsPassive($room[0]['room_name']);
         $firstPlayerName = $GameModel->findFirstPlayer($room[0]['room_name']);
-        $answer = array('allstep' => $allstep, 'active' => $passive[0]['passive'], 'firstPlayerName' => $firstPlayerName[0]['first_player'], 'yourName' => $_SESSION['user']);
+        $answer = array('allstep' => $allstep, 'active' => $passive[0]['passive'], 'firstPlayerName' => $firstPlayerName[0]['first_player'], 'yourName' => $this->userName);
         echo json_encode($answer); exit;
     }
 }

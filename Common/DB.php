@@ -11,7 +11,7 @@ class DB
         $this->connection  = new \mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     }
 
-    public function query($sql)
+    public function query($sql) //подключение к БД
     {
         $result = $this->connection->query($sql);
         $data = array();

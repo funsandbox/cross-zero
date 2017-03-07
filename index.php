@@ -26,7 +26,7 @@ $action = 'index';
 $parameters = null;
 session_start();
 
-if( isset($_GET['route']))
+if( isset($_GET['route'])) //определение необходимого контролера и метода и URL
 {
     $route = explode('/', $_GET['route']);
     if(isset($route[0]))

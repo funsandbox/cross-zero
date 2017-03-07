@@ -8,7 +8,7 @@ class UserController extends BaseController
 {
     protected $name = 'User';
 
-    public function profile()
+    public function profile() // создание страницы профиля
     {
         $UserModel = new UserModel();
         if($_GET['id'])

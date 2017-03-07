@@ -5,7 +5,7 @@ namespace Controller;
 use Model\LoginModel;
 use Model\GameModel;
 
-class LoginController extends BaseController
+class LoginController extends BaseController // вход в на сайт
 {
     protected $name = 'Login';
     private $users = array();
@@ -35,7 +35,7 @@ class LoginController extends BaseController
         }
     }
 
-    public function signup()
+    public function signup() // регистрация
     {
         if ($_POST)
         {
@@ -53,7 +53,7 @@ class LoginController extends BaseController
         $this->render("signup");
     }
 
-    public function logout()
+    public function logout() // выход
     {
         $loginModel = new LoginModel();
         $loginModel->offline($_SESSION['userId']);
@@ -64,3 +64,6 @@ class LoginController extends BaseController
         $this->render("logout");
     }
 }
+
+
+

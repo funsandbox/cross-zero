@@ -10,7 +10,7 @@ class BaseModel
     protected $table;
     public function __construct()
     {
-        $this->db = new DB();
+        $this->db = new DB(); // создание переменной в которой будут храниться все необходимые данные
     }
 
     public function getAll()
@@ -28,13 +28,6 @@ class BaseModel
         }
         return $result[0];
     }
-
-    public function rand()
-    {
-        $result = $this->db->query('select * from ' . $this->table . ' order by rand() limit 3');
-        return $result;
-    }
-
     public function post($key, $default = NULL)
     {
         return isset($_POST[$key]) ? $_POST[$key] : $default;
